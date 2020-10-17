@@ -2,8 +2,6 @@ package main
 
 import (
 	"fmt"
-	"strconv"
-	"strings"
 )
 
 /*
@@ -23,19 +21,6 @@ type node struct {
 
 func (n *node) asString() string {
 	return fmt.Sprintf("{parent:%d, size:%d, visited:%t}", n.parent, n.size, n.visited)
-}
-
-func dumpNodesArray(nodes []node) string {
-	output := "{"
-	n := len(nodes)
-	for i, node := range nodes {
-		output += node.asString()
-		if (i < n-1) {
-			output += ", "
-		}
-	}
-	output += "}"
-	return output
 }
 
 func dumpArray(items []int32) string {
@@ -64,86 +49,6 @@ func dumpTree(tree map[int32]node) string {
 	}
 	output += "}"
 	return output
-}
-
-func traverseToRoot(ptr int32, nodes []node) (string, int32) {
-	branch := fmt.Sprintf("%d ", ptr)
-	aNode := nodes[ptr]
-	score := aNode.size
-	for aNode.parent != -1 {
-		fmt.Printf("node[%d] ? ", ptr)
-		branch += fmt.Sprintf("%d ", ptr)
-		score += aNode.size
-		ptr = aNode.parent
-		aNode = nodes[ptr]
-	}
-	if (aNode.parent == -1) {
-		fmt.Printf("node[%d] ? ", ptr)
-		branch += fmt.Sprintf("%d ", ptr)
-		score += aNode.size
-	}
-	fmt.Printf("\nDEBUG: branch=%s, score=%d\n", branch, score)
-	return branch, score
-}
-
-func getNodePtrsFromSubBranch(branch string) []int32 {
-	toks := strings.Fields(branch)
-	ptrs := make([]int32, len(toks))
-	for i, tok := range toks {
-		x, _ := strconv.ParseInt(tok, 10, 32)
-		ptrs[i] = int32(x)
-	}
-	return ptrs
-}
-
-func generateTrees(nodes []node) map[string]int32 {
-	trees := make(map[string]int32)
-	fmt.Println("DEBUG: BEGIN")
-	for i, node := range nodes {
-		fmt.Printf("nodes[%d] -> %s\n", i, node.asString())
-	}
-	fmt.Println("DEBUG: END!!!")
-	var aNode node
-	branch := ""
-	for j := len(nodes)-1; j >= 0; j-- {
-		aNode = nodes[j]
-		if (aNode.parent != -1) && (aNode.visited == false) {
-			br, score := traverseToRoot(int32(j), nodes)
-			ptrs := getNodePtrsFromSubBranch(br)
-			fmt.Printf("br=%s, ptrs=%s\n", br, dumpArray(ptrs))
-			for k := 0; k < len(ptrs)-1; k++ {
-				nodes[ptrs[k]].visited = true
-				fmt.Printf("nodes[%d](%d).visited=%t\n", ptrs[k], k, nodes[ptrs[k]].visited)
-				//nodes[ptrs[k]] = nodes[ptrs[k]]
-			}
-			branch += br
-			fmt.Printf("** branch: %s", branch)
-			trees[branch] = score
-			branch = ""
-		}
-	}
-	return trees
-}
-
-func mostBalancedPartition1(parent []int32, filesSize []int32) (int32, string) {
-    tree := make([]node, len(parent))
-    for i := 0; i < len(parent); i++ {
-        tree[i] = node{parent: parent[i], size: filesSize[i], visited: false}
-	}
-	output := "{"
-	for _, t := range tree {
-		output += t.asString() + ", "
-	}
-	output += "}"
-	
-	trees := generateTrees(tree)
-
-	fmt.Printf("BEGIN: trees\n")
-	for k,v := range trees {
-		fmt.Printf("%s -> %d\n", k, v)
-	}
-	fmt.Printf("END!!!\n")
-    return 0, output
 }
 
 func isNodeInAnyTree(trees []map[int32]node, ptr int32) bool {
